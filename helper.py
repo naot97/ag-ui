@@ -25,10 +25,6 @@ def get_azure_openai_key():
     return os.getenv("AZURE_OPENAI_API_KEY")
 
 
-def get_gemini_api_key():
-    load_env()
-    return os.getenv("GOOGLE_API_KEY")
-
 
 def load_api_keys():
     """Load API keys from .env and set them in os.environ."""
@@ -52,12 +48,6 @@ def load_api_keys():
         if val:
             os.environ[var] = val
 
-    gemini_key = os.getenv("GOOGLE_API_KEY")
-    if gemini_key:
-        os.environ["GOOGLE_API_KEY"] = gemini_key
-        print("✓ Google API key loaded")
-    else:
-        print("ℹ GOOGLE_API_KEY not set (only needed for bonus sections)")
 
 
 # ── Port scheme ──────────────────────────────────────────────────────
