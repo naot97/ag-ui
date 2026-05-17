@@ -1,15 +1,15 @@
+import os
+
 from copilotkit import CopilotKitMiddleware
 from langchain.agents import create_agent
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 
 import logging
 logging.getLogger("langgraph.checkpoint").setLevel(logging.ERROR)
 
 agent = create_agent(
-    model=ChatOpenAI(
-        model="gpt-5.4-mini",
-    ),
+    model=AzureChatOpenAI(azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")),
     tools=[],
     middleware=[CopilotKitMiddleware()],
     checkpointer=MemorySaver(),

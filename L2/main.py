@@ -16,12 +16,12 @@ from ag_ui_langgraph import add_langgraph_fastapi_endpoint
 from copilotkit import CopilotKitMiddleware, LangGraphAGUIAgent
 from fastapi import FastAPI
 from langchain.agents import create_agent
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 
 HOST = "0.0.0.0"
 PORT = 8000
-MODEL = "gpt-4.1"
+MODEL = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4.1")
 
 app = FastAPI()
 agent = LangGraphAGUIAgent(
@@ -49,23 +49,22 @@ def _kill_port(port: int) -> None:
         pass
 
 
-def _ensure_openai_api_key() -> None:
-    if os.environ.get("OPENAI_API_KEY"):
+def _ensure_azure_env() -> None:
+    if os.environ.get("AZURE_OPENAI_API_KEY"):
         return
 
     repo_root = Path(__file__).resolve().parents[1]
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
 
-    from helper import get_openai_api_key
-
-    os.environ["OPENAI_API_KEY"] = get_openai_api_key()
+    from helper import load_api_keys
+    load_api_keys()
 
 
 def build_graph(model_name: str = MODEL):
-    _ensure_openai_api_key()
+    _ensure_azure_env()
     return create_agent(
-        model=ChatOpenAI(model=model_name),
+        model=AzureChatOpenAI(azure_deployment=model_name),
         tools=[],
         middleware=[CopilotKitMiddleware()],
         checkpointer=MemorySaver(),

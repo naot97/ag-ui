@@ -10,9 +10,11 @@ warnings.filterwarnings("ignore")
 from ag_ui_langgraph import add_langgraph_fastapi_endpoint
 from copilotkit import CopilotKitMiddleware, LangGraphAGUIAgent
 from fastapi import FastAPI
+import os
+
 from langchain.agents import create_agent
 from langchain.tools import tool
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 
 _LESSON_ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +31,7 @@ def query_data(query: str) -> list[dict[str, Any]]:
 
 def _build_graph():
     return create_agent(
-        model=ChatOpenAI(model="gpt-4.1"),
+        model=AzureChatOpenAI(azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")),
         tools=[query_data],
         middleware=[CopilotKitMiddleware()],
         checkpointer=MemorySaver(),

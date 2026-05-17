@@ -2,14 +2,19 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+import os
+
 from ag_ui_langgraph import add_langgraph_fastapi_endpoint
 from copilotkit import LangGraphAGUIAgent
 from langchain.agents import create_agent
+from langchain_openai import AzureChatOpenAI
 
 from fastapi import FastAPI
 
 app = FastAPI()
-graph = create_agent("openai:gpt-4.1")
+graph = create_agent(
+    model=AzureChatOpenAI(azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")),
+)
 agent = LangGraphAGUIAgent(
     name="default",
     description="Lesson 6 shared-state todo agent",

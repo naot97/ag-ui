@@ -9,8 +9,10 @@ logging.getLogger("langgraph.checkpoint").setLevel(logging.ERROR)
 from ag_ui_langgraph import add_langgraph_fastapi_endpoint
 from copilotkit import CopilotKitMiddleware, LangGraphAGUIAgent
 from fastapi import FastAPI
+import os
+
 from langchain.agents import create_agent
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 
 import textwrap
@@ -38,8 +40,8 @@ SYSTEM_PROMPT: str = textwrap.dedent("""
 
 def _build_graph():
     return create_agent(
-        model=ChatOpenAI(
-            model="gpt-5.4-mini",
+        model=AzureChatOpenAI(
+            azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o"),
             temperature=0,
         ),
         tools=[],

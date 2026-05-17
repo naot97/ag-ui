@@ -20,9 +20,9 @@ def load_env():
     _ = load_dotenv(find_dotenv())
 
 
-def get_openai_api_key():
+def get_azure_openai_key():
     load_env()
-    return os.getenv("OPENAI_API_KEY")
+    return os.getenv("AZURE_OPENAI_API_KEY")
 
 
 def get_gemini_api_key():
@@ -33,12 +33,24 @@ def get_gemini_api_key():
 def load_api_keys():
     """Load API keys from .env and set them in os.environ."""
     load_env()
-    openai_key = os.getenv("OPENAI_API_KEY")
-    if openai_key:
-        os.environ["OPENAI_API_KEY"] = openai_key
-        print("✓ OpenAI API key loaded")
+    azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+    if azure_key:
+        os.environ["AZURE_OPENAI_API_KEY"] = azure_key
+        print("✓ Azure OpenAI API key loaded")
     else:
-        print("⚠ OPENAI_API_KEY not found — check your .env file")
+        print("⚠ AZURE_OPENAI_API_KEY not found — check your .env file")
+
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    if azure_endpoint:
+        os.environ["AZURE_OPENAI_ENDPOINT"] = azure_endpoint
+        print("✓ Azure OpenAI endpoint loaded")
+    else:
+        print("⚠ AZURE_OPENAI_ENDPOINT not found — check your .env file")
+
+    for var in ("AZURE_OPENAI_DEPLOYMENT", "AZURE_OPENAI_API_VERSION"):
+        val = os.getenv(var)
+        if val:
+            os.environ[var] = val
 
     gemini_key = os.getenv("GOOGLE_API_KEY")
     if gemini_key:
