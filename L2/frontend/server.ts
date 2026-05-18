@@ -4,7 +4,7 @@ import { LangGraphHttpAgent } from "@copilotkit/runtime/langgraph";
 import { serve } from "@hono/node-server";
 
 const langGraphAgent = new LangGraphHttpAgent({
-  url: process.env.LANGGRAPH_DEPLOYMENT_URL || "http://localhost:8002",
+  url: process.env.LANGGRAPH_DEPLOYMENT_URL || "http://localhost:8000",
 });
 
 const runtime = new CopilotRuntime({

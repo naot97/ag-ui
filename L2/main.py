@@ -23,11 +23,42 @@ HOST = "0.0.0.0"
 PORT = 8000
 MODEL = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4.1")
 
+def _ensure_azure_env() -> None:
+    if os.environ.get("AZURE_OPENAI_API_KEY"):
+        return
+
+    repo_root = Path(__file__).resolve().parents[1]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    from helper import load_api_keys
+    load_api_keys()
+
+
+def build_graph(model_name: str = MODEL):
+    _ensure_azure_env()
+    api_version = os.environ.get("AZURE_OPENAI_API_VERSION") or os.environ.get("OPENAI_API_VERSION")
+    return create_agent(
+        model=AzureChatOpenAI(azure_deployment=model_name, api_version=api_version),
+        tools=[],
+        middleware=[CopilotKitMiddleware()],
+        checkpointer=MemorySaver(),
+        system_prompt=(
+            "You are a helpful assistant for a demo app with a few available UI tools. "
+            "Prefer using a matching frontend tool when it would present the answer clearly. "
+            "For chart requests, use concise made-up demo data when the user does not provide data. "
+            "Use pieChart for category distributions "
+            "and flightCard for a single flight summary when relevant. "
+            "Tool arguments must match the provided schema exactly."
+        ),
+    )
+
+
 app = FastAPI()
 agent = LangGraphAGUIAgent(
     name="lesson2_agent",
     description="Lesson 2 chart agent",
-    graph=None,
+    graph=build_graph(),
 )
 add_langgraph_fastapi_endpoint(app=app, agent=agent, path="/")
 
@@ -47,36 +78,6 @@ def _kill_port(port: int) -> None:
             time.sleep(0.5)
     except Exception:
         pass
-
-
-def _ensure_azure_env() -> None:
-    if os.environ.get("AZURE_OPENAI_API_KEY"):
-        return
-
-    repo_root = Path(__file__).resolve().parents[1]
-    if str(repo_root) not in sys.path:
-        sys.path.insert(0, str(repo_root))
-
-    from helper import load_api_keys
-    load_api_keys()
-
-
-def build_graph(model_name: str = MODEL):
-    _ensure_azure_env()
-    return create_agent(
-        model=AzureChatOpenAI(azure_deployment=model_name),
-        tools=[],
-        middleware=[CopilotKitMiddleware()],
-        checkpointer=MemorySaver(),
-        system_prompt=(
-            "You are a helpful assistant for a demo app with a few available UI tools. "
-            "Prefer using a matching frontend tool when it would present the answer clearly. "
-            "For chart requests, use concise made-up demo data when the user does not provide data. "
-            "Use pieChart for category distributions "
-            "and flightCard for a single flight summary when relevant. "
-            "Tool arguments must match the provided schema exactly."
-        ),
-    )
 
 
 def load_graph(model_name: str = MODEL):
@@ -100,7 +101,6 @@ def start_backend(host: str = HOST, port: int = PORT, log_level: str = "warning"
 
 
 def main() -> None:
-    load_graph()
     uvicorn.run(app, host=HOST, port=PORT, log_level="info")
 
 
